@@ -1,0 +1,3 @@
+comparison,group_col,group_a,group_b,n_group_a,n_group_b
+developer:OpenAI_vs_Anthropic,developer,OpenAI,Anthropic,21,11
+provenance:closed_or_api_vs_open_weight_like,provenance_group,closed_or_api,open_weight_like,48,33

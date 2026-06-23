@@ -1,0 +1,14 @@
+simple3_factor,harm_category,n_items
+contextual,misinformation_disinformation,31
+contextual,chemical_biological,28
+contextual,cybercrime_intrusion,27
+contextual,harassment_bullying,6
+contextual,illegal,6
+contextual,harmful,1
+copyright,copyright,100
+standard,illegal,57
+standard,cybercrime_intrusion,40
+standard,misinformation_disinformation,34
+standard,chemical_biological,28
+standard,harmful,21
+standard,harassment_bullying,19

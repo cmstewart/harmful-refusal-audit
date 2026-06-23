@@ -1,0 +1,3 @@
+provenance_group,n_models,mean_harmbench_score,sd_harmbench_score,min_harmbench_score,max_harmbench_score
+closed_or_api,48,0.7761725293132328,0.1982157273415224,0.2864321608040201,1.0
+open_weight_like,33,0.5067763057712806,0.19692434945438958,0.04271356783919598,0.8040201005025126

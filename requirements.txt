@@ -1,0 +1,17 @@
+# Core analysis
+numpy
+pandas
+scipy
+scikit-learn
+matplotlib
+
+# IRT / MIRT fitting (variational inference)
+py-irt
+
+# Data download
+requests
+
+# Notebook
+jupyter
+notebook
+nbformat
