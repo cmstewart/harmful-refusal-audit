@@ -122,7 +122,7 @@ To regenerate the summary figure from the result CSVs, run `python figures/make_
 | Hong Shen | Carnegie Mellon University |
 | Hoda Heidari | Carnegie Mellon University |
 
-Questions about the code or the analysis can go to cstewar3@andrew.cmu.edu.
+Questions about the code or the analysis? Let us know at cstewar3@andrew.cmu.edu or cstewm@gmail.com
 
 ## Citation
 
@@ -137,8 +137,4 @@ Questions about the code or the analysis can go to cstewar3@andrew.cmu.edu.
 
 ## Acknowledgments
 
-We thank Jeremy Miles for his comments on an earlier draft of the manuscript. HELM Safety data are hosted publicly by the Stanford Center for Research on Foundation Models.
-
-## License
-
-[Add a license file and name it here.]
+We thank Jeremy N. V. Miles for his comments on an earlier draft of the manuscript. HELM Safety data are hosted publicly by the Stanford Center for Research on Foundation Models.
