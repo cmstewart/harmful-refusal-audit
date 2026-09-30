@@ -9,24 +9,24 @@
 </p>
 
 <p align="center">
-Safety leaderboards report one number per model. This repository asks whether the most natural single-attribute reading of that number, a model’s tendency to refuse harmful requests, survives two standard psychometric tests. For HarmBench inside HELM Safety, it does not.
+Safety leaderboards report one number per model. This repository asks whether the most natural single-attribute reading of that number, a model’s tendency to refuse harmful requests or "harmful refusal", survives two standard psychometric tests for HELM Safety, a popular AI Safety benchmark. For HarmBench, the only HELM Safety component dataset that is not saturated, it does not. We propose treating benchmark scores as claims to be checked rather than a measurement to be trusted.
 </p>
 
 <p align="center"><img src="figures/readme_summary.png" alt="Left. Held-out log-loss for each item-response model, with the unidimensional model far behind every multidimensional one. Right. Family-wise developer DIF flags drop from 13 and 17 under the single score to a handful under the scoped scores." width="100%"></p>
 
 ## What we found
 
-**Three of four candidate datasets are saturated.** AnthropicRedTeam, SimpleSafetyTests, and the harmful subset of XSTest have pass rates near 0.94 across the 81 models in HELM Safety v1.17.0. Almost every model passes almost every item. Only HarmBench, at 0.67, still separates models.
+**Three of four candidate HELM Safety datasets relevant to _harmful refusal_ are saturated:** AnthropicRedTeam, SimpleSafetyTests, and the harmful subset of XSTest have pass rates near 0.94 across the 81 models in HELM Safety v1.17.0. Almost every model passes almost every item. Only HarmBench, at 0.67, still separates models.
 
-**One dimension is too few for HarmBench.** A unidimensional 2PL model reaches a held-out log-loss of 0.470. Every multidimensional model does far better. A confirmatory three-factor model that separates standard, contextual, and copyright items reaches 0.258 and wins on AIC and BIC. Every one of its twenty restarts beats every restart of the strongest unidimensional model in every split. A follow-up that drops the copyright items still favors a two-factor model over one factor in all five splits.
+**One dimension is too few for HarmBench:** A unidimensional 2PL model reaches a held-out log-loss of 0.470. Every multidimensional model does far better. A confirmatory three-factor model that separates standard, contextual, and copyright items reaches 0.258 and wins on AIC and BIC. Every one of its twenty restarts beats every restart of the strongest unidimensional model in every split. A follow-up that drops the copyright items still favors a two-factor model over one factor in all five splits.
 
-**Developer-linked DIF appears under the single score and mostly disappears under scoped scores.** Matched on overall ability, OpenAI and Anthropic models still differ on 13 items by Mantel-Haenszel and 17 by a ridge-logistic screen. Score the three item types separately and the counts fall to 1 and 2. This pattern is consistent with aggregation effects. It does not rule out genuine domain-specific developer differences.
+**Developer-linked differential-item functioning (DIF) appears under the single score and mostly disappears under scoped scores:** Matched on overall ability, OpenAI and Anthropic models still differ on 13 items by Mantel-Haenszel and 17 by a ridge-logistic screen. Score the three item types separately and the counts fall to 1 and 2. While this pattern is consistent with aggregation effects, it does not rule out genuine domain-specific developer differences.
 
-**The single score does not measure one thing.** A number offered as a measure of one attribute should earn that reading before it is used to compare models. For HarmBench the reading the evidence supports is the narrow one that keeps the behaviors apart.
+**The single HELM Safety score does not measure a single _harmful refusal_ construct:** A number offered as a measure of one attribute should earn that reading before it is used to compare models. For HarmBench, the reading the evidence supports is a narrow one that keeps the behaviors in its component datasets separate.
 
 ## How the audit works
 
-A HarmBench score supports a claim about a model only through a warrant. The warrant holds that a single *harmful refusal* construct organizes the item responses (Borsboom et al., 2004). The two tests probe that warrant from inside and from outside the response matrix.
+A HarmBench score supports a claim about a model only through a warrant. In our case, the warrant holds that a single *harmful refusal* construct organizes the item responses (Borsboom et al., 2004). The two tests probe that warrant from inside and from outside the response matrix.
 
 ```mermaid
 flowchart LR
