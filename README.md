@@ -1,65 +1,144 @@
-# IRT-based contamination detection
+<h1 align="center">Searching for “Harmful Refusal”</h1>
+<p align="center"><strong>A Psychometric Audit of an AI Safety Benchmark</strong></p>
 
-This project aims to detect benchmark contamination in large language models by treating it as item preknowledge, a concept borrowed from psychometric test security. Under the proposed hypothesis, a model is a suspect on an item when it succeeds far beyond what its latent ability predicts. This repository holds the screening stage that surfaces suspects on [GSM8K](https://huggingface.co/datasets/openai/gsm8k) using item response theory (IRT), a reproduction stage that validates the inference harness, and a perturbation stage that confirms suspects.
+<p align="center">
+  <a href="https://colmweb.org/"><img alt="Published at the AI Measurement Science Workshop, COLM 2026" src="https://img.shields.io/badge/AIMS%20Workshop-COLM%202026-1f2a44"></a>
+  <a href="[paper link]"><img alt="Paper" src="https://img.shields.io/badge/paper-PDF-2a78d6"></a>
+  <img alt="Python 3.10 or later" src="https://img.shields.io/badge/python-3.10%2B-3776ab">
+  <img alt="HELM Safety v1.17.0" src="https://img.shields.io/badge/HELM%20Safety-v1.17.0-6c757d">
+</p>
 
-## Idea
+<p align="center">
+Safety leaderboards report one number per model. This repository asks whether the most natural single-attribute reading of that number, a model’s tendency to refuse harmful requests, survives two standard psychometric tests. For HarmBench inside HELM Safety, it does not.
+</p>
 
-Contamination is a property of a model-item pair, not of an item alone, in the same way that a student having seen an exam question is a property of that student and that question. The method runs in three stages.
+<p align="center"><img src="figures/readme_summary.png" alt="Left. Held-out log-loss for each item-response model, with the unidimensional model far behind every multidimensional one. Right. Family-wise developer DIF flags drop from 13 and 17 under the single score to a handful under the scoped scores." width="100%"></p>
 
-- Screen. We fit a 2PL IRT model to a large model-by-item response matrix, then compute the standardized residual for each cell. A large positive residual is a success the item difficulty cannot explain. This is a cheap correlational filter that surfaces suspects.
-- Reproduce. We confirm that a local inference harness reproduces the stored benchmark scores before trusting any perturbation result. The check runs in both directions, on items a model passed and items it failed.
-- Identify. We perturb a flagged item into a twin that keeps the arithmetic and changes the surface numbers, then re-run the suspect models. A model that passes the original and fails the twin memorized the item. A model that passes both has the underlying skill.
+## What we found
 
-The screen on its own cannot separate genuine narrow skill from exposure, so no flagged item is a finding until perturbation confirms it.
+**Three of four candidate datasets are saturated.** AnthropicRedTeam, SimpleSafetyTests, and the harmful subset of XSTest have pass rates near 0.94 across the 81 models in HELM Safety v1.17.0. Almost every model passes almost every item. Only HarmBench, at 0.67, still separates models.
 
-## Repository layout
+**One dimension is too few for HarmBench.** A unidimensional 2PL model reaches a held-out log-loss of 0.470. Every multidimensional model does far better. A confirmatory three-factor model that separates standard, contextual, and copyright items reaches 0.258 and wins on AIC and BIC. Every one of its twenty restarts beats every restart of the strongest unidimensional model in every split. A follow-up that drops the copyright items still favors a two-factor model over one factor in all five splits.
 
-The repository is organized by the three stages. The README and the .gitignore sit at the root.
+**Developer-linked DIF appears under the single score and mostly disappears under scoped scores.** Matched on overall ability, OpenAI and Anthropic models still differ on 13 items by Mantel-Haenszel and 17 by a ridge-logistic screen. Score the three item types separately and the counts fall to 1 and 2. This pattern is consistent with aggregation effects. It does not rule out genuine domain-specific developer differences.
 
-Screening holds the residual screen and its outputs.
-- Screening/gsm8k_2pl_irt.ipynb. Builds the response matrix, checks unidimensionality, fits the 2PL, and runs the residual screen.
-- Screening/gsm8k_matrix_filtered.parquet. The filtered binary response matrix, 6,014 models by 1,214 items.
-- Screening/gsm8k_2pl_item_params.csv. Item difficulty and discrimination from the 2PL fit.
-- Screening/gsm8k_2pl_abilities.csv. Estimated latent ability for each model.
-- Screening/gsm8k_preknowledge_screen.csv. The one-sided preknowledge score per model.
-- Screening/gsm8k_flagged_cells.csv. The flagged model-item cells from the screen.
-- Screening/gsm8k_flagged_with_gold.csv. The recurring flagged items with question text and gold worked answers.
+**The single score does not measure one thing.** A number offered as a measure of one attribute should earn that reading before it is used to compare models. For HarmBench the reading the evidence supports is the narrow one that keeps the behaviors apart.
 
-Reproduction holds the harness validation.
-- Reproduction/gsm8k_reproduction_check.ipynb. Re-runs small flagged models on original items and compares against the stored matrix. Includes saved outputs.
-- Reproduction/gsm8k_reproduction_results.csv. The per-run agreement results.
+## How the audit works
 
-Perturbation holds the twin generation, the flip test, and the cloud execution path.
-- Perturbation/gsm8k_twins_flip_test.ipynb. Generates numeric twins and runs the flip test.
-- Perturbation/cloud/flip_runner.py. The batch runner that executed the flip test on a disposable VM.
-- Perturbation/cloud/startup.sh. The VM startup script that installs, runs the runner, and uploads results.
-- Perturbation/results/preliminary_flip_results.md. The full flip-test writeup, the control comparison, the twin validity audit, and the refuted case study.
-- Perturbation/results/gsm8k_flip_all.csv. The per-pair flip results from the full sweep.
-- Perturbation/results/gsm8k_twins.csv. The generated twins, retained here as the record of what was run.
-- Perturbation/cloud/. The execution machinery. preflight.py resolves true model sizes from weight metadata, flip_task.py runs one model per task, and the Dockerfile and batch scripts drive GCP Batch.
-- Control/. The matched control condition. build_control_plan.py selects difficulty-matched unflagged items per model, build_control_gold.py recovers their GSM8K solutions, and audit_twins.py checks which items can support a valid twin at all.
+A HarmBench score supports a claim about a model only through a warrant. The warrant holds that a single *harmful refusal* construct organizes the item responses (Borsboom et al., 2004). The two tests probe that warrant from inside and from outside the response matrix.
+
+```mermaid
+flowchart LR
+    D["Data<br/>Item-level pass and fail responses on HarmBench"] -->|licenses| C["Claim<br/>A higher score means the model refuses harmful requests more consistently"]
+    W["Warrant<br/>A single harmful refusal construct organizes the responses"] --> C
+    T1["Test 1. Dimensionality<br/>Does one latent dimension organize the responses?"] -.-> W
+    T2["Test 2. Differential item functioning<br/>Do equally able models from different developers respond alike?"] -.-> W
+```
+
+**Test 1** fits exploratory multidimensional 2PL models from one to ten dimensions and two confirmatory models. The three-factor response-process model assigns items to standard, contextual, or copyright. The seven-factor harm-domain model assigns items to HarmBench’s semantic categories. Models are compared by held-out log-loss and Brier score over five repeated 80/20 response-level splits, with twenty random restarts per cell selected on training likelihood only. A Bernoulli-null eigenvalue check on the item-correlation matrix serves as a model-light screen.
+
+**Test 2** asks whether an item is calibrated the same way for two groups of models after matching on fitted ability. The primary screen is Mantel-Haenszel within three ability bands. A ridge-penalized logistic screen with continuous ability is the sensitivity check. Cutoffs come from 5,000 no-DIF response matrices simulated from the fitted IRT model, with a family-wise cutoff at the 95th percentile of the maximum statistic. Two comparisons are fixed in advance. OpenAI against Anthropic, and closed or API models against open-weight-like models.
+
+## Results at a glance
+
+Held-out prediction across five repeated splits. All models are 2PL except the 3PL row, which is the strongest unidimensional comparator. Lower is better in the fit columns.
+
+| Model | d | Fitted quantities | Log-loss | Brier | AIC | BIC |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| Unidimensional 2PL | 1 | 877 | 0.470 | 0.156 | 25,806 | 32,961 |
+| Unidimensional 3PL | 1 | 1,275 | 0.322 | 0.096 | 17,600 | 28,001 |
+| Exploratory 2PL, best of 2D to 10D | 5 | 4,385 | 0.282 | 0.085 | 21,329 | 57,100 |
+| Confirmatory 3D response-process | 3 | 1,039 | 0.258 | 0.078 | **13,707** | **22,183** |
+| Confirmatory 7D harm-domain | 7 | 1,363 | **0.255** | **0.077** | 13,961 | 25,080 |
+
+Family-wise DIF flags for OpenAI against Anthropic after ability matching. The closed-versus-open comparison produces no family-wise flags in any scope, even though the two groups differ widely in raw mean score, 0.776 against 0.507.
+
+| Matching scope | Items | Mantel-Haenszel | Ridge logistic |
+| --- | ---: | ---: | ---: |
+| Single HarmBench score | 398 | 13 | 17 |
+| 3D scopes, all three item types | 398 | 1 | 2 |
+| 7D scopes, all seven harm domains | 398 | 2 | 5 |
+
+Factor correlations in the three-factor model. Standard and contextual items sit close together. Copyright sits apart, which is what the construct predicts once reproduction of memorized text is separated from declining a harmful request.
+
+| | Standard | Contextual | Copyright |
+| --- | ---: | ---: | ---: |
+| Standard | 1.000 | 0.785 | 0.451 |
+| Contextual | 0.785 | 1.000 | 0.603 |
+| Copyright | 0.451 | 0.603 | 1.000 |
 
 ## Data
 
-Response data comes from metabench (Kipnis et al.), which assembled item-wise correctness for the Open LLM Leaderboard v1 benchmarks across more than five thousand models. The GSM8K slice is used here. To reproduce the analysis, download data.tar.gz from the metabench Zenodo record 12819251 and extract it to benchmark-data. Question text and gold worked answers come from the GSM8K dataset on Hugging Face. These sources are not redistributed here.
+The analysis uses HELM Safety release v1.17.0, accessed 21 June 2026. Each item carries a continuous safety score averaged from two LLM judges on a five-point rubric. We binarize strictly at 1.0, so only a unanimous perfect score counts as a pass. HarmBench keeps 398 of 400 items under this rule. The model pool is 81 models after removing six with incomplete per-item data. The full list is in the notebook appendix.
 
-## Results so far
+HarmBench supplies two item taxonomies. Three functional categories describe the response process, with 199 standard items, 99 contextual items, and 100 copyright items. Seven semantic categories describe content. Copyright is the one category that appears in both.
 
-- GSM8K survives as a near-unidimensional construct on this pool. The variance filter retains 1,214 of 1,319 items, and the item correlation scree gives a first-to-second eigenvalue ratio of about 11.9.
-- The 2PL fit is well behaved, with a median discrimination of 1.83 and item parameters that reproduce observed item difficulty at a correlation of 0.999.
-- The screen flags 848 model-item cells across 424 models and 63 distinct items, 57 of which are flagged by three or more models.
-- The reproduction check passed at 100 percent agreement on 18 runs across two models, in both directions.
-- The perturbation stage completed its full sweep. Flagged cells fail a number-changed twin 85.1 percent of the time, 86 of 101 pairs. This figure alone means nothing, because models degrade broadly when numbers change whether or not they saw the item.
-- The matched control is the result. For each flagged cell we tested a different item the same model passed and was never flagged on, matched on 2PL difficulty. Control cells fail 56.1 percent of the time, 60 of 107 pairs. The gap is 29.0 points with an odds ratio of 4.49 and a p of 0.000005. A flagged cell has about four and a half times the odds of breaking under perturbation.
-- Roughly 16 percent of GSM8K items cannot support a valid numeric twin, because the annotated solution trace does not reach the stated answer. Invalid twins score correct answers as failures and manufacture apparent memorization. Auditing them widened the gap, since they had been inflating the control rate rather than the treatment rate.
-- A candidate single-item case study did not survive. Four models appeared to recite a stored answer to a changed question, but eight further twins showed that answer was reachable from the new numbers by a common omission error. There is no clean demonstration of retrieval in this data. See Perturbation/results for the full account.
+## Repository layout
 
-## Running it
+```
+.
+├── Harmful Refusal Construct Validity.ipynb   Manuscript-aligned notebook
+├── figures/
+│   ├── harmbench_item_correlation_parallel_analysis_nozoom.png   Bernoulli-null eigenvalue check
+│   ├── readme_summary.png                     Summary figure above
+│   └── make_readme_figure.py                  Rebuilds readme_summary.png from results/
+├── results/                                   CSVs behind the paper’s main tables
+│   ├── harmbench_all_model_holdout_comparison*.csv        Model comparison, pooled and by split
+│   ├── harmbench_simple3_factor_correlations.csv          3D factor correlations
+│   ├── harmbench_domain7_factor_correlations.csv          7D factor correlations
+│   ├── harmbench_mh_dif_flag_summary_with_domain7.csv     Mantel-Haenszel DIF flags by scope
+│   ├── harmbench_logistic_dif_flag_summary_with_domain7.csv   Ridge-logistic DIF flags by scope
+│   ├── harmbench_dif_*_descriptives.csv                   Group sizes and raw means
+│   └── harmbench_item_type_*.csv                          Item counts and pass rates by type
+└── requirements.txt
+```
 
-Each notebook reads its inputs by filename and resolves them across the stage folders. The screening notebook needs the metabench data extracted to benchmark-data and py-irt, which requires Python 3.9 to 3.11. The reproduction and perturbation notebooks additionally need torch, transformers, and accelerate, and they want a GPU. The flip test was executed at scale through the cloud scripts in Perturbation/cloud rather than in the notebook.
+## Reproducing the analysis
 
-## Status
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+jupyter notebook "Harmful Refusal Construct Validity.ipynb"
+```
 
-All three stages are complete and the main comparison is in place. The screen is best understood as a ranking instrument rather than a classifier. A companion simulation with planted ground-truth contamination puts its precision near 0.19, and independently predicts the empirical lift we measured, 1.54 against our 1.52.
+The setup cells download the relevant HELM Safety runs from Stanford CRFM’s public bucket on first use and rebuild the strict binary response matrix. Downloads are cached under `helm_safety_data/`, which is ignored by git. The notebook then walks through the paper’s results in order and reads the fitted results from `results/`.
 
-Two directions remain. Anchoring ability and difficulty on secure items would address the circularity in the screen, and the simulation shows why it matters, since screen recall falls from 0.179 to 0.061 as contamination density rises and the fitted item parameters absorb the anomalous successes. Separately, fine-tuning a base model on known items would create ground-truth contamination in real text rather than in a response-process simulation, which would give sensitivity and specificity instead of an odds ratio against a proxy baseline.
+The MIRT fits use variational inference in py-irt with pyro as the backend. Each model and split runs twenty random initializations with seeds 0 through 19 for 2,000 epochs of stochastic variational inference with Adam at learning rate 0.01. Fits that produce NaN losses are retried at learning rate 0.005 for 3,000 epochs. The fitted parameter caches are large and are not included here.
+
+To regenerate the summary figure from the result CSVs, run `python figures/make_readme_figure.py` from the repository root.
+
+## Authors
+
+| | |
+| --- | --- |
+| [Christopher M. Stewart](https://github.com/cmstewart) | Carnegie Mellon University |
+| Preston Botter | Indiana University |
+| Natalie Sarabosing | Carnegie Mellon University |
+| Muye Zhang | Google |
+| Rachel Phinnemore | Google |
+| Shalini Ghosh | Google |
+| Hong Shen | Carnegie Mellon University |
+| Hoda Heidari | Carnegie Mellon University |
+
+Questions about the code or the analysis can go to cstewar3@andrew.cmu.edu.
+
+## Citation
+
+```bibtex
+@inproceedings{stewart2026harmfulrefusal,
+  title     = {Searching for ``Harmful Refusal'': A Psychometric Audit of an AI Safety Benchmark},
+  author    = {Stewart, Christopher M. and Botter, Preston and Sarabosing, Natalie and Zhang, Muye and Phinnemore, Rachel and Ghosh, Shalini and Shen, Hong and Heidari, Hoda},
+  booktitle = {AI Measurement Science Workshop at the Conference on Language Modeling (COLM)},
+  year      = {2026}
+}
+```
+
+## Acknowledgments
+
+We thank Jeremy Miles for his comments on an earlier draft of the manuscript. HELM Safety data are hosted publicly by the Stanford Center for Research on Foundation Models.
+
+## License
+
+[Add a license file and name it here.]
