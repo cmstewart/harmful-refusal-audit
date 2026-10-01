@@ -1,5 +1,4 @@
-<h1>Searching for “Harmful Refusal”</h1>
-<p><strong>A Psychometric Audit of an AI Safety Benchmark</strong></p>
+<h1>Searching for <span style="font-style: italic;">Harmful Refusal”</span>: A Psychometric Audit of an AI Safety Benchmark</h1>
 
 <p align="center">
   <a href="https://colmweb.org/"><img alt="Published at the AI Measurement Science Workshop, COLM 2026" src="https://img.shields.io/badge/AIMS%20Workshop-COLM%202026-1f2a44"></a>
