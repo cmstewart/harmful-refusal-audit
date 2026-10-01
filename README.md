@@ -107,6 +107,8 @@ The MIRT fits use variational inference in py-irt with pyro as the backend. Each
 
 To regenerate the summary figure from the result CSVs, run `python figures/make_readme_figure.py` from the repository root.
 
+The notebook ends with **Appendix E: Added Camera-Ready Analyses**: split/restart stability for 1D 3PL versus confirmatory 3D 2PL, and the 1D-versus-2D follow-up without copyright items. Run its cells to reproduce the manuscript summaries from the two `results/harmbench_*_restart_metrics.csv` files. The optional `RUN_REFIT` cell reruns the 200 copyright-excluded fits using the downloaded data and `results/harmbench_item_types.csv`; it is off by default and writes new results under `helm_safety_data/`.
+
 ## Authors
 
 | | |
