@@ -136,4 +136,5 @@ Questions about the code or the analysis? Let us know at cstewar3@andrew.cmu.edu
 
 ## Acknowledgments
 
-We thank Jeremy N. V. Miles for his comments on an earlier draft of the manuscript. HELM Safety data are hosted publicly by the Stanford Center for Research on Foundation Models.
+We thank Jeremy N. V. Miles for his comments on an earlier draft of the manuscript. HELM Safety data are hosted publicly by the Stanford Center for Research on Foundation Models. This work was supported by Google. Any opinions, findings, conclusions, or recommendations expressed in this material are those of the authors and do not
+reflect the views of Google or other funding agencies.
