@@ -8,7 +8,7 @@
   <img alt="HELM Safety v1.17.0" src="https://img.shields.io/badge/HELM%20Safety-v1.17.0-6c757d">
 </p>
 
-<p align="center">
+<p>
 Safety leaderboards report one number per model. This repository asks whether the most natural single-attribute reading of that number, a model’s tendency to refuse harmful requests or "harmful refusal", survives two standard psychometric tests for HELM Safety, a popular AI Safety benchmark. For HarmBench, the only HELM Safety component dataset that is not saturated, it does not. We propose treating benchmark scores as claims to be checked rather than a measurement to be trusted.
 </p>
 
