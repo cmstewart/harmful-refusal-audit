@@ -28,13 +28,12 @@ Safety leaderboards report one number per model. This repository asks whether th
 
 A HarmBench score supports a claim about a model only through a warrant. In our case, the warrant holds that a single *harmful refusal* construct organizes the item responses (Borsboom et al., 2004). The two tests probe that warrant from inside and from outside the response matrix.
 
-```mermaid
-flowchart LR
-    D["Data<br/>Item-level pass and fail responses on HarmBench"] -->|licenses| C["Claim<br/>A higher score means the model refuses harmful requests more consistently"]
-    W["Warrant<br/>A single harmful refusal construct organizes the responses"] --> C
-    T1["Test 1. Dimensionality<br/>Does one latent dimension organize the responses?"] -.-> W
-    T2["Test 2. Differential item functioning<br/>Do equally able models from different developers respond alike?"] -.-> W
-```
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="figures/warrant_diagram_dark.svg">
+    <img src="figures/warrant_diagram.svg" alt="The HarmBench score supports a claim about a model only through a warrant, and two tests probe that warrant." width="720">
+  </picture>
+</p>
 
 **Test 1** fits exploratory multidimensional 2PL models from one to ten dimensions and two confirmatory models. The three-factor response-process model assigns items to standard, contextual, or copyright. The seven-factor harm-domain model assigns items to HarmBench’s semantic categories. Models are compared by held-out log-loss and Brier score over five repeated 80/20 response-level splits, with twenty random restarts per cell selected on training likelihood only. A Bernoulli-null eigenvalue check on the item-correlation matrix serves as a model-light screen.
 
